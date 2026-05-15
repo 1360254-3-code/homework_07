@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>滋味外賣墻</title>
+    <style>
+        :root {
+            --bg: #FFF9F2;
+            --card-bg: #FFFFFF;
+            --primary: #E8630A;
+            --primary-hover: #C75108;
+            --primary-light: #FFF1E6;
+            --text: #2D2420;
+            --text-secondary: #6B5E56;
+            --text-muted: #9B8A80;
+            --border: #EDE3DA;
+            --shadow-sm: 0 1px 3px rgba(45, 36, 32, 0.06);
+            --shadow-md: 0 4px 16px rgba(45, 36, 32, 0.10);
+            --shadow-lg: 0 8px 30px rgba(45, 36, 32, 0.13);
+            --radius-sm: 10px;
+            --radius-md: 14px;
+            --radius-lg: 18px;
+            --font-heading: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', sans-serif;
+            --font-body: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', sans-serif;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --cat-noodle: #E85D3A;
+            --cat-noodle-bg: #FFF0EB;
+            --cat-snack: #E8A317;
+            --cat-snack-bg: #FFF9ED;
+            --cat-dessert: #E8608C;
+            --cat-dessert-bg: #FFF0F5;
+            --cat-cake: #9B59B6;
+            --cat-cake-bg: #F8F0FB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px 16px 60px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-image:
+                radial-gradient(ellipse at 15% 5%, rgba(232, 99, 10, 0.04) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 92%, rgba(232, 140, 23, 0.05) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 40%, rgba(232, 96, 140, 0.03) 0%, transparent 60%);
+            background-attachment: fixed;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 560px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 10px 0 6px;
+            position: relative;
+        }
+        .header-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 4px;
+            animation: floatIcon 3s ease-in-out infinite;
+            filter: drop-shadow(0 4px 8px rgba(232, 99, 10, 0.18));
+        }
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .header h1 {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            color: var(--text);
+            margin: 0;
+            line-height: 1.25;
+        }
+        .header h1 .accent {
+            color: var(--primary);
+        }
+        .header .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+            letter-spacing: 0.02em;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 20px 22px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            transition: box-shadow var(--transition);
+        }
+        .form-card:focus-within {
+            box-shadow: var(--shadow-lg), 0 0 0 3px rgba(232, 99, 10, 0.08);
+            border-color: #F0C4A0;
+        }
+        .form-card .form-title {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-card .form-title .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: inline-block;
+            animation: pulseDot 1.8s ease-in-out infinite;
+        }
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.7); opacity: 0.35; }
+        }
+        .form-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 130px;
+        }
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.02em;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            padding: 11px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: #FEFCF9;
+            color: var(--text);
+            transition: all var(--transition);
+            outline: none;
+            width: 100%;
+            letter-spacing: 0.02em;
+            resize: vertical;
+        }
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #C4B8AE;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(232, 99, 10, 0.07);
+            background: #FFFFFF;
+        }
+        .form-group select {
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B5E56' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        .form-group textarea {
+            min-height: 70px;
+            max-height: 140px;
+            line-height: 1.5;
+        }
+        .btn-submit {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 11px 22px;
+            background: var(--primary);
+            color: #FFFFFF;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            letter-spacing: 0.03em;
+            transition: all var(--transition);
+            white-space: nowrap;
+            box-shadow: 0 3px 12px rgba(232, 99, 10, 0.25);
+            position: relative;
+            overflow: hidden;
+            min-width: 80px;
+            height: 44px;
+            align-self: flex-end;
+        }
+        .btn-submit:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 5px 18px rgba(232, 99, 10, 0.35);
+            transform: translateY(-1px);
+        }
+        .btn-submit:active {
+            transform: scale(0.96);
+            box-shadow: 0 2px 8px rgba(232, 99, 10, 0.2);
+            transition: all 0.08s;
+        }
+        .btn-submit::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.13) 0%, transparent 60%);
+            pointer-events: none;
+            border-radius: inherit;
+        }
+
+        .filters-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .filter-group .filter-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            min-width: 42px;
+        }
+        .filter-btn {
+            font-family: var(--font-body);
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 7px 15px;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .filter-btn:hover {
+            border-color: #D4C5B8;
+            color: var(--text);
+            background: #FEFCF9;
+        }
+        .filter-btn.active {
+            background: var(--primary);
+            color: #FFFFFF;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(232, 99, 10, 0.22);
+            font-weight: 700;
+        }
+        .filter-btn.cat-noodle.active {
+            background: var(--cat-noodle);
+            border-color: var(--cat-noodle);
+            box-shadow: 0 2px 8px rgba(232, 93, 58, 0.25);
+        }
+        .filter-btn.cat-snack.active {
+            background: var(--cat-snack);
+            border-color: var(--cat-snack);
+            box-shadow: 0 2px 8px rgba(232, 163, 23, 0.25);
+        }
+        .filter-btn.cat-dessert.active {
+            background: var(--cat-dessert);
+            border-color: var(--cat-dessert);
+            box-shadow: 0 2px 8px rgba(232, 96, 140, 0.25);
+        }
+        .filter-btn.cat-cake.active {
+            background: var(--cat-cake);
+            border-color: var(--cat-cake);
+            box-shadow: 0 2px 8px rgba(155, 89, 182, 0.25);
+        }
+
+        .count-bar {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            padding: 0 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .count-bar .count-num {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+        .records-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 44px 24px 36px;
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1.5px dashed var(--border);
+        }
+        .empty-state .empty-icon {
+            font-size: 56px;
+            display: block;
+            margin-bottom: 10px;
+            opacity: 0.75;
+        }
+        .empty-state .empty-text {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .empty-state .empty-hint {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .record-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            padding: 16px 18px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            transition: all var(--transition);
+            animation: cardSlideIn 0.4s ease-out;
+        }
+        @keyframes cardSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-16px);
+                box-shadow: 0 0 0 transparent;
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                box-shadow: var(--shadow-sm);
+            }
+        }
+        .record-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: #DDD0C4;
+            transform: translateY(-1px);
+        }
+        .record-card .card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .record-card .category-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 11px;
+            border-radius: 14px;
+            letter-spacing: 0.03em;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .cat-noodle-tag { background: var(--cat-noodle-bg); color: var(--cat-noodle); }
+        .cat-snack-tag { background: var(--cat-snack-bg); color: var(--cat-snack); }
+        .cat-dessert-tag { background: var(--cat-dessert-bg); color: var(--cat-dessert); }
+        .cat-cake-tag { background: var(--cat-cake-bg); color: var(--cat-cake); }
+
+        .record-card .card-shop-name {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--text);
+            margin-bottom: 6px;
+            letter-spacing: 0.02em;
+            line-height: 1.35;
+            word-break: break-word;
+        }
+        .record-card .card-review {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            line-height: 1.5;
+            word-break: break-word;
+            background: #FDFBFA;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border-left: 3px solid var(--primary-light);
+        }
+        .record-card .card-meta {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .record-card .card-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .btn-like {
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 7px 15px;
+            border-radius: 20px;
+            border: 1.5px solid #FDE0CC;
+            background: #FFF6EF;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all var(--transition);
+            letter-spacing: 0.02em;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            user-select: none;
+            min-width: 52px;
+            justify-content: center;
+        }
+        .btn-like:hover {
+            background: #FFEBDB;
+            border-color: #F5C49E;
+            box-shadow: 0 2px 8px rgba(232, 99, 10, 0.13);
+            transform: scale(1.04);
+        }
+        .btn-like:active {
+            transform: scale(0.92);
+            background: #FFE0C8;
+            transition: all 0.08s;
+        }
+        .btn-like .like-icon {
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+        .btn-like:active .like-icon {
+            transform: scale(1.4);
+        }
+        .btn-like .like-count {
+            font-weight: 800;
+            font-size: 0.9rem;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #2D2420;
+            color: #FFFFFF;
+            padding: 10px 20px;
+            border-radius: 24px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+            z-index: 999;
+            pointer-events: none;
+            transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+            white-space: nowrap;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 420px) {
+            .header h1 { font-size: 1.6rem; }
+            .header-icon { font-size: 38px; }
+            .form-row { flex-direction: column; gap: 10px; }
+            .form-group { min-width: 100%; }
+            .btn-submit { width: 100%; align-self: stretch; }
+            .record-card { padding: 14px 14px; }
+            .record-card .card-shop-name { font-size: 1.05rem; }
+            .filter-btn { font-size: 0.76rem; padding: 6px 12px; }
+            .filter-group .filter-label { font-size: 0.7rem; min-width: 32px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <span class="header-icon">🍜</span>
+            <h1>滋味<span class="accent">外賣墻</span></h1>
+            <p class="subtitle">匿名評價 · 食遍四方 · 滋味分享</p>
+        </div>
+
+        <div class="form-card" id="formCard">
+            <div class="form-title">
+                <span class="dot"></span> 新增外賣評價
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="inputContent">🍽️ 外賣店鋪名稱 *</label>
+                    <input type="text" id="inputContent" placeholder="例如：阿明粉麵" maxlength="60" autocomplete="off">
+                </div>
+                <div class="form-group" style="max-width:160px;">
+                    <label for="inputCategory">📂 分類</label>
+                    <select id="inputCategory">
+                        <option value="粉麵">🍜 粉麵</option>
+                        <option value="小食">🍟 小食</option>
+                        <option value="甜品飲料">🧋 甜品飲料</option>
+                        <option value="蛋糕">🍰 蛋糕</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label for="inputReview">📝 評價感想（選填）</label>
+                <textarea id="inputReview" placeholder="寫下你對這間外賣嘅感受⋯⋯" maxlength="200"></textarea>
+            </div>
+            <div style="margin-top: 14px; display: flex; justify-content: flex-end;">
+                <button class="btn-submit" id="btnSubmit" type="button">➕ 提交評價</button>
+            </div>
+        </div>
+
+        <div class="filters-section" id="filtersSection">
+            <div class="filter-group" id="categoryFilterGroup">
+                <span class="filter-label">🏷️ 分類</span>
+                <button class="filter-btn active" data-category-filter="all">全部</button>
+                <button class="filter-btn cat-noodle" data-category-filter="粉麵">🍜 粉麵</button>
+                <button class="filter-btn cat-snack" data-category-filter="小食">🍟 小食</button>
+                <button class="filter-btn cat-dessert" data-category-filter="甜品飲料">🧋 甜品飲料</button>
+                <button class="filter-btn cat-cake" data-category-filter="蛋糕">🍰 蛋糕</button>
+            </div>
+        </div>
+
+        <div class="count-bar" id="countBar">
+            共 <span class="count-num" id="countNum">0</span> 條評價
+        </div>
+
+        <div class="records-list" id="recordsList"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        (function() {
+            const inputContent = document.getElementById('inputContent');
+            const inputCategory = document.getElementById('inputCategory');
+            const inputReview = document.getElementById('inputReview');
+            const btnSubmit = document.getElementById('btnSubmit');
+            const recordsList = document.getElementById('recordsList');
+            const countNum = document.getElementById('countNum');
+            const toast = document.getElementById('toast');
+            const categoryFilterGroup = document.getElementById('categoryFilterGroup');
+
+            let currentCategoryFilter = 'all';
+            let toastTimer = null;
+
+            function showToast(message, duration = 1800) {
+                if (toastTimer) clearTimeout(toastTimer);
+                toast.textContent = message;
+                toast.classList.add('show');
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                    toastTimer = null;
+                }, duration);
+            }
+
+            function loadData() {
+                try {
+                    const raw = localStorage.getItem('records');
+                    if (!raw) return [];
+                    const parsed = JSON.parse(raw);
+                    if (!Array.isArray(parsed)) return [];
+                    return parsed;
+                } catch (e) {
+                    console.error('loadData error:', e);
+                    return [];
+                }
+            }
+
+            function saveData(record) {
+                const records = loadData();
+                records.push(record);
+                try {
+                    localStorage.setItem('records', JSON.stringify(records));
+                } catch (e) {
+                    console.error('saveData error:', e);
+                    showToast('⚠️ 儲存失敗，請檢查瀏覽器空間');
+                }
+            }
+
+            function updateRecord(id, changes) {
+                const records = loadData();
+                const index = records.findIndex(r => r.id === id);
+                if (index === -1) {
+                    console.warn('updateRecord: record not found, id=', id);
+                    return;
+                }
+                records[index] = { ...records[index], ...changes };
+                try {
+                    localStorage.setItem('records', JSON.stringify(records));
+                } catch (e) {
+                    console.error('updateRecord error:', e);
+                    showToast('⚠️ 更新失敗，請檢查瀏覽器空間');
+                }
+            }
+
+            function createRecord(formData) {
+                const record = {
+                    id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
+                    createdAt: new Date().toISOString(),
+                    content: formData.content.trim(),
+                    category: formData.category,
+                    review: formData.review ? formData.review.trim() : '',
+                    likes: 0,
+                };
+                saveData(record);
+                return record;
+            }
+
+            function formatDate(isoString) {
+                try {
+                    const d = new Date(isoString);
+                    if (isNaN(d.getTime())) return isoString;
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const hours = String(d.getHours()).padStart(2, '0');
+                    const minutes = String(d.getMinutes()).padStart(2, '0');
+                    return `${year}-${month}-${day} ${hours}:${minutes}`;
+                } catch (e) {
+                    return isoString;
+                }
+            }
+
+            function getCategoryEmoji(category) {
+                const map = {
+                    '粉麵': '🍜',
+                    '小食': '🍟',
+                    '甜品飲料': '🧋',
+                    '蛋糕': '🍰',
+                };
+                return map[category] || '📦';
+            }
+
+            function getCategoryTagClass(category) {
+                const map = {
+                    '粉麵': 'cat-noodle-tag',
+                    '小食': 'cat-snack-tag',
+                    '甜品飲料': 'cat-dessert-tag',
+                    '蛋糕': 'cat-cake-tag',
+                };
+                return map[category] || '';
+            }
+
+            function getFilterBtnClass(category) {
+                const map = {
+                    '粉麵': 'cat-noodle',
+                    '小食': 'cat-snack',
+                    '甜品飲料': 'cat-dessert',
+                    '蛋糕': 'cat-cake',
+                };
+                return map[category] || '';
+            }
+
+            function renderList(recordsToShow) {
+                const sorted = [...recordsToShow].sort((a, b) => {
+                    const timeA = new Date(a.createdAt).getTime();
+                    const timeB = new Date(b.createdAt).getTime();
+                    if (isNaN(timeA) && isNaN(timeB)) return 0;
+                    if (isNaN(timeA)) return 1;
+                    if (isNaN(timeB)) return -1;
+                    return timeB - timeA;
+                });
+
+                countNum.textContent = sorted.length;
+
+                if (sorted.length === 0) {
+                    const isFiltering = currentCategoryFilter !== 'all';
+                    recordsList.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-icon">${isFiltering ? '🔍' : '📝'}</span>
+                            <p class="empty-text">${isFiltering ? '沒有符合分類的評價' : '尚未有任何評價'}</p>
+                            <p class="empty-hint">${isFiltering ? '試試調整分類篩選吧～' : '快啲喺上面新增第一條評價啦！'}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                sorted.forEach(record => {
+                    const catEmoji = getCategoryEmoji(record.category);
+                    const catTagClass = getCategoryTagClass(record.category);
+                    const formattedDate = formatDate(record.createdAt);
+                    const reviewHtml = record.review ? `<div class="card-review">${escapeHtml(record.review)}</div>` : '';
+
+                    html += `
+                        <div class="record-card" data-record-id="${escapeHtml(record.id)}">
+                            <div class="card-top">
+                                <span class="category-tag ${catTagClass}">${catEmoji} ${escapeHtml(record.category)}</span>
+                            </div>
+                            <div class="card-shop-name">${escapeHtml(record.content)}</div>
+                            ${reviewHtml}
+                            <div class="card-meta">
+                                <span class="meta-icon">🕒</span> ${formattedDate}
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn-like" data-action="like" data-id="${escapeHtml(record.id)}" data-likes="${record.likes}">
+                                    <span class="like-icon">👍</span>
+                                    <span class="like-count">${record.likes}</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                recordsList.innerHTML = html;
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            function applyFiltersAndRender() {
+                const allRecords = loadData();
+                let filtered = allRecords;
+
+                if (currentCategoryFilter !== 'all') {
+                    filtered = filtered.filter(r => r.category === currentCategoryFilter);
+                }
+
+                renderList(filtered);
+                updateFilterButtonStyles();
+            }
+
+            function updateFilterButtonStyles() {
+                const categoryBtns = categoryFilterGroup.querySelectorAll('.filter-btn');
+                categoryBtns.forEach(btn => {
+                    const filterVal = btn.getAttribute('data-category-filter');
+                    if (filterVal === currentCategoryFilter) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            function handleSubmit() {
+                const content = inputContent.value.trim();
+                const category = inputCategory.value;
+                const review = inputReview.value.trim();
+
+                if (!content) {
+                    showToast('⚠️ 請輸入外賣店鋪名稱');
+                    inputContent.focus();
+                    inputContent.style.borderColor = '#E85D3A';
+                    inputContent.style.boxShadow = '0 0 0 4px rgba(232,93,58,0.12)';
+                    setTimeout(() => {
+                        inputContent.style.borderColor = '';
+                        inputContent.style.boxShadow = '';
+                    }, 600);
+                    return;
+                }
+
+                if (!category) {
+                    showToast('⚠️ 請選擇分類');
+                    return;
+                }
+
+                const newRecord = createRecord({ content, category, review });
+                console.log('Created record:', newRecord);
+
+                inputContent.value = '';
+                inputReview.value = '';
+                inputContent.focus();
+
+                applyFiltersAndRender();
+                showToast('🎉 評價已新增！');
+            }
+
+            function handleLike(recordId) {
+                const allRecords = loadData();
+                const record = allRecords.find(r => r.id === recordId);
+                if (!record) return;
+
+                const newLikes = (record.likes || 0) + 1;
+                updateRecord(recordId, { likes: newLikes });
+
+                const card = recordsList.querySelector(`[data-record-id="${CSS.escape(recordId)}"]`);
+                if (card) {
+                    const likeBtn = card.querySelector('[data-action="like"]');
+                    if (likeBtn) {
+                        const likeCountSpan = likeBtn.querySelector('.like-count');
+                        if (likeCountSpan) {
+                            likeCountSpan.textContent = newLikes;
+                        }
+                        likeBtn.setAttribute('data-likes', newLikes);
+                        likeCountSpan.style.transform = 'scale(1.5)';
+                        likeCountSpan.style.transition = 'transform 0.15s ease-out';
+                        setTimeout(() => {
+                            likeCountSpan.style.transform = 'scale(1)';
+                        }, 150);
+                    }
+                }
+
+                showToast(`👍 +1 (${newLikes})`, 1000);
+            }
+
+            recordsList.addEventListener('click', function(e) {
+                const target = e.target.closest('button');
+                if (!target) return;
+
+                const action = target.getAttribute('data-action');
+                const recordId = target.getAttribute('data-id');
+
+                if (action === 'like' && recordId) {
+                    handleLike(recordId);
+                }
+            });
+
+            btnSubmit.addEventListener('click', handleSubmit);
+
+            inputContent.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit();
+                }
+            });
+
+            categoryFilterGroup.addEventListener('click', function(e) {
+                const btn = e.target.closest('.filter-btn');
+                if (!btn) return;
+                const filterVal = btn.getAttribute('data-category-filter');
+                if (filterVal && filterVal !== currentCategoryFilter) {
+                    currentCategoryFilter = filterVal;
+                    applyFiltersAndRender();
+                }
+            });
+
+            if (typeof CSS === 'undefined' || typeof CSS.escape !== 'function') {
+                window.CSS = window.CSS || {};
+                CSS.escape = function(value) {
+                    return String(value).replace(/([^\w-])/g, '\\$1');
+                };
+            }
+
+            function init() {
+                applyFiltersAndRender();
+                inputContent.focus();
+            }
+
+            init();
+
+            console.log('🍜 滋味外賣墻 已就緒 (無狀態版本)');
+            console.log('   - localStorage key: records');
+            console.log('   - 當前記錄數:', loadData().length);
+        })();
+    </script>
+</body>
+</html>
