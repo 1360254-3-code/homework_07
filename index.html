@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>滋味外賣墻</title>
     <style>
+        /* === 所有 CSS 保持原樣，完全未更動 === */
         :root {
             --bg: #FFF9F2;
             --card-bg: #FFFFFF;
@@ -572,6 +573,9 @@
 
     <script>
         (function() {
+            // ========== Backend Connector Configuration ==========
+            const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuwzS6RrPs5OdE835rG3CkncwtWVNxga0QFg-rbs2rL-0v4jGVPCzHgm6EIImxA2Tr_Q/exec";
+
             const inputContent = document.getElementById('inputContent');
             const inputCategory = document.getElementById('inputCategory');
             const inputReview = document.getElementById('inputReview');
@@ -594,6 +598,7 @@
                 }, duration);
             }
 
+            // ========== Original localStorage functions (kept as fallback) ==========
             function loadData() {
                 try {
                     const raw = localStorage.getItem('records');
@@ -634,6 +639,83 @@
                 }
             }
 
+            // ========== New Backend Connector Functions ==========
+            async function syncToSheet(payload) {
+                try {
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    if (!result.ok) {
+                        console.warn("syncToSheet failed:", result.error);
+                    }
+                } catch (err) {
+                    console.error("syncToSheet network error:", err);
+                    // Silent fail, localStorage still holds the data
+                }
+            }
+
+            async function fetchRecordsFromSheet() {
+                try {
+                    const response = await fetch(APPS_SCRIPT_URL);
+                    const data = await response.json();
+                    if (data.ok && Array.isArray(data.records)) {
+                        return data.records.map(normalizeRecord);
+                    }
+                    console.warn("fetchRecordsFromSheet: invalid response", data);
+                    return [];
+                } catch (err) {
+                    console.error("fetchRecordsFromSheet error:", err);
+                    return [];
+                }
+            }
+
+            function normalizeRecord(raw) {
+                // 建立 key 映射表（大小寫不敏感，中英文都支援）
+                const keyMap = {
+                    id: 'id',
+                    createdat: 'createdAt',
+                    '建立時間': 'createdAt',
+                    content: 'content',
+                    '店鋪名稱': 'content',
+                    category: 'category',
+                    '分類': 'category',
+                    review: 'review',
+                    '評價感想': 'review',
+                    likes: 'likes',
+                    '讚數': 'likes'
+                };
+
+                const record = {
+                    id: '',
+                    createdAt: '',
+                    content: '',
+                    category: '',
+                    review: '',
+                    likes: 0
+                };
+
+                // 遍歷 raw 物件的所有 key，進行標準化
+                Object.keys(raw).forEach(rawKey => {
+                    const lowerKey = String(rawKey).toLowerCase().trim();
+                    const mapped = keyMap[lowerKey] || keyMap[rawKey.trim()] || null;
+                    if (mapped) {
+                        record[mapped] = raw[rawKey];
+                    }
+                });
+
+                // 強制類型轉換
+                if (typeof record.likes !== 'number') {
+                    record.likes = Number(record.likes) || 0;
+                }
+                // 確保 review 至少為空字串
+                record.review = record.review || '';
+                return record;
+            }
+
+            // ========== Original createRecord (kept identical) ==========
             function createRecord(formData) {
                 const record = {
                     id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
@@ -776,6 +858,7 @@
                 });
             }
 
+            // ========== Modified handleSubmit (adds syncToSheet) ==========
             function handleSubmit() {
                 const content = inputContent.value.trim();
                 const category = inputCategory.value;
@@ -801,6 +884,9 @@
                 const newRecord = createRecord({ content, category, review });
                 console.log('Created record:', newRecord);
 
+                // 同步到 Google Sheet（非同步，不等待）
+                syncToSheet({ action: "create", record: newRecord });
+
                 inputContent.value = '';
                 inputReview.value = '';
                 inputContent.focus();
@@ -809,6 +895,7 @@
                 showToast('🎉 評價已新增！');
             }
 
+            // ========== Modified handleLike (adds syncToSheet for update) ==========
             function handleLike(recordId) {
                 const allRecords = loadData();
                 const record = allRecords.find(r => r.id === recordId);
@@ -817,6 +904,10 @@
                 const newLikes = (record.likes || 0) + 1;
                 updateRecord(recordId, { likes: newLikes });
 
+                // 同步到 Google Sheet
+                syncToSheet({ action: "update", id: recordId, changes: { likes: newLikes } });
+
+                // 即時更新 UI 中的讚數（不重繪整個列表）
                 const card = recordsList.querySelector(`[data-record-id="${CSS.escape(recordId)}"]`);
                 if (card) {
                     const likeBtn = card.querySelector('[data-action="like"]');
@@ -868,6 +959,7 @@
                 }
             });
 
+            // CSS.escape polyfill (保留)
             if (typeof CSS === 'undefined' || typeof CSS.escape !== 'function') {
                 window.CSS = window.CSS || {};
                 CSS.escape = function(value) {
@@ -875,16 +967,30 @@
                 };
             }
 
-            function init() {
+            // ========== Modified init (async, fetch from Sheet first) ==========
+            async function init() {
+                try {
+                    const sheetRecords = await fetchRecordsFromSheet();
+                    if (sheetRecords.length > 0) {
+                        // 覆寫 localStorage 以保持同步
+                        localStorage.setItem('records', JSON.stringify(sheetRecords));
+                        console.log('Loaded from Sheet:', sheetRecords.length, 'records');
+                    } else {
+                        console.log('Sheet returned 0 records, keeping localStorage data.');
+                    }
+                } catch (err) {
+                    console.warn('Failed to fetch from Sheet, using localStorage fallback.', err);
+                }
+                // 無論如何都渲染（loadData 會自動讀 localStorage）
                 applyFiltersAndRender();
                 inputContent.focus();
             }
 
             init();
 
-            console.log('🍜 滋味外賣墻 已就緒 (無狀態版本)');
-            console.log('   - localStorage key: records');
-            console.log('   - 當前記錄數:', loadData().length);
+            console.log('🍜 滋味外賣墻 已就緒 (已串接 Google Sheet)');
+            console.log('   - Apps Script URL:', APPS_SCRIPT_URL);
+            console.log('   - 資料來源: 優先 Sheet，其次 localStorage');
         })();
     </script>
 </body>
