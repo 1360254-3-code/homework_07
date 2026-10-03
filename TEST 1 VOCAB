@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>雅思/圖表寫作詞彙配對練習</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --primary: #2563eb;
+      --primary-light: #dbeafe;
+      --text: #1e293b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --error: #dc2626;
+      --error-bg: #fee2e2;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 2rem 1rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 760px;
+      width: 100%;
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+
+    h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.5rem;
+      color: #0f172a;
+    }
+
+    .stats {
+      font-size: 0.95rem;
+      color: #64748b;
+    }
+
+    .game-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .item-btn {
+      padding: 0.85rem 1rem;
+      background: #f1f5f9;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--text);
+    }
+
+    .item-btn:hover:not(.matched):not(:disabled) {
+      background: #e2e8f0;
+    }
+
+    .item-btn.selected {
+      border-color: var(--primary);
+      background-color: var(--primary-light);
+      font-weight: bold;
+    }
+
+    .item-btn.matched {
+      background-color: var(--success-bg);
+      border-color: var(--success);
+      color: var(--success);
+      cursor: default;
+    }
+
+    .item-btn.shake {
+      background-color: var(--error-bg);
+      border-color: var(--error);
+      animation: shake 0.3s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn:hover {
+      background-color: #1d4ed8;
+    }
+
+    #message {
+      font-weight: bold;
+      color: var(--success);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>圖表與數據描述詞彙配對</h1>
+      <div class="stats">點擊左側英文，再點擊右側相應的中文解釋</div>
+    </header>
+
+    <div class="game-area">
+      <div class="column" id="en-list"></div>
+      <div class="column" id="zh-list"></div>
+    </div>
+
+    <div class="controls">
+      <span id="message"></span>
+      <button class="btn" id="next-btn" onclick="startNewRound()">更換下一組</button>
+    </div>
+  </div>
+
+  <script>
+    const fullDataset = [
+      { en: "Sharply", zh: "急劇地" },
+      { en: "rapidly", zh: "迅速地" },
+      { en: "steeply", zh: "陡峭地" },
+      { en: "dramatically", zh: "顯著地（劇烈變化）" },
+      { en: "drastically", zh: "劇烈地" },
+      { en: "markedly", zh: "明顯地" },
+      { en: "substantially", zh: "大幅度地" },
+      { en: "significantly", zh: "顯著地（重要/明顯）" },
+      { en: "gradually", zh: "漸進地" },
+      { en: "steadily", zh: "穩定地" },
+      { en: "suddenly", zh: "突然地" },
+      { en: "moderately", zh: "適度地" },
+      { en: "slightly", zh: "輕微地" },
+      { en: "slowly", zh: "緩慢地" },
+      { en: "similarly", zh: "同樣地" },
+      { en: "equally", zh: "相等地" },
+      { en: "respectively", zh: "分別地" },
+      { en: "stably", zh: "平穩地" },
+      { en: "constantly", zh: "持續地" },
+      { en: "consistently", zh: "一貫地" },
+      { en: "a tiny fraction", zh: "極小的部分" },
+      { en: "one in ten", zh: "十分之一" },
+      { en: "almost a quarter", zh: "接近四分之一（almost）" },
+      { en: "nearly a quarter", zh: "接近四分之一（nearly）" },
+      { en: "roughly one quarter", zh: "大約四分之一" },
+      { en: "almost one-third", zh: "接近三分之一（almost）" },
+      { en: "nearly one-third", zh: "接近三分之一（nearly）" },
+      { en: "around a half", zh: "大約一半" },
+      { en: "just over a half", zh: "剛過半數" },
+      { en: "nearly three quarters", zh: "接近四分之三（nearly）" },
+      { en: "almost three quarters", zh: "接近四分之三（almost）" },
+      { en: "a tiny portion", zh: "極小一部分" },
+      { en: "an insignificant minority", zh: "微不足道的少數" },
+      { en: "a small minority", zh: "少數" },
+      { en: "the majority", zh: "大多數" },
+      { en: "a large proportion", zh: "大比例" },
+      { en: "a significant majority", zh: "明顯的大多數" },
+      { en: "a very large proportion", zh: "極大比例" },
+      { en: "a large gap between ... and ...", zh: "兩者之間有巨大差距" },
+      { en: "at", zh: "用於指出精確數值或頂點" },
+      { en: "to", zh: "用於指出趨勢變化的最終到達點" },
+      { en: "by", zh: "用於指出增減變化的差額或幅度" },
+      { en: "from ... to ...", zh: "用於指出起點與終點" },
+      { en: "of", zh: "用於名詞後直接接具體數值" }
+    ];
+
+    const ROUND_SIZE = 6;
+    let selectedEnBtn = null;
+    let selectedZhBtn = null;
+    let currentPairs = [];
+    let matchedCount = 0;
+
+    function shuffle(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function startNewRound() {
+      const enContainer = document.getElementById("en-list");
+      const zhContainer = document.getElementById("zh-list");
+      const msg = document.getElementById("message");
+      
+      enContainer.innerHTML = "";
+      zhContainer.innerHTML = "";
+      msg.textContent = "";
+      selectedEnBtn = null;
+      selectedZhBtn = null;
+      matchedCount = 0;
+
+      // 隨機選取 6 組
+      currentPairs = shuffle(fullDataset).slice(0, ROUND_SIZE);
+
+      const shuffledEn = shuffle(currentPairs);
+      const shuffledZh = shuffle(currentPairs);
+
+      shuffledEn.forEach(item => {
+        const btn = document.createElement("button");
+        btn.className = "item-btn";
+        btn.textContent = item.en;
+        btn.dataset.match = item.en;
+        btn.onclick = () => handleEnClick(btn);
+        enContainer.appendChild(btn);
+      });
+
+      shuffledZh.forEach(item => {
+        const btn = document.createElement("button");
+        btn.className = "item-btn";
+        btn.textContent = item.zh;
+        btn.dataset.match = item.en;
+        btn.onclick = () => handleZhClick(btn);
+        zhContainer.appendChild(btn);
+      });
+    }
+
+    function handleEnClick(btn) {
+      if (btn.classList.contains("matched")) return;
+      if (selectedEnBtn) selectedEnBtn.classList.remove("selected");
+      selectedEnBtn = btn;
+      btn.classList.add("selected");
+      checkMatch();
+    }
+
+    function handleZhClick(btn) {
+      if (btn.classList.contains("matched")) return;
+      if (selectedZhBtn) selectedZhBtn.classList.remove("selected");
+      selectedZhBtn = btn;
+      btn.classList.add("selected");
+      checkMatch();
+    }
+
+    function checkMatch() {
+      if (!selectedEnBtn || !selectedZhBtn) return;
+
+      const isMatch = selectedEnBtn.dataset.match === selectedZhBtn.dataset.match;
+
+      if (isMatch) {
+        selectedEnBtn.className = "item-btn matched";
+        selectedZhBtn.className = "item-btn matched";
+        selectedEnBtn = null;
+        selectedZhBtn = null;
+        matchedCount++;
+
+        if (matchedCount === ROUND_SIZE) {
+          document.getElementById("message").textContent = "太棒了！本輪全部配對成功！";
+        }
+      } else {
+        const b1 = selectedEnBtn;
+        const b2 = selectedZhBtn;
+        b1.classList.add("shake");
+        b2.classList.add("shake");
+
+        setTimeout(() => {
+          b1.classList.remove("shake", "selected");
+          b2.classList.remove("shake", "selected");
+        }, 400);
+
+        selectedEnBtn = null;
+        selectedZhBtn = null;
+      }
+    }
+
+    // 初始化第一輪
+    startNewRound();
+  </script>
+</body>
+</html>
