@@ -1,967 +1,400 @@
-<!DOCTYPE html>
-<html lang="zh-HK">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>滋味外賣墻</title>
-    <style>
-        :root {
-            --bg: #FFF9F2;
-            --card-bg: #FFFFFF;
-            --primary: #E8630A;
-            --primary-hover: #C75108;
-            --primary-light: #FFF1E6;
-            --text: #2D2420;
-            --text-secondary: #6B5E56;
-            --text-muted: #9B8A80;
-            --border: #EDE3DA;
-            --shadow-sm: 0 1px 3px rgba(45, 36, 32, 0.06);
-            --shadow-md: 0 4px 16px rgba(45, 36, 32, 0.10);
-            --shadow-lg: 0 8px 30px rgba(45, 36, 32, 0.13);
-            --radius-sm: 10px;
-            --radius-md: 14px;
-            --radius-lg: 18px;
-            --font-heading: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', sans-serif;
-            --font-body: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', sans-serif;
-            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            --cat-noodle: #E85D3A;
-            --cat-noodle-bg: #FFF0EB;
-            --cat-snack: #E8A317;
-            --cat-snack-bg: #FFF9ED;
-            --cat-dessert: #E8608C;
-            --cat-dessert-bg: #FFF0F5;
-            --cat-cake: #9B59B6;
-            --cat-cake-bg: #F8F0FB;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: var(--font-body);
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            padding: 20px 16px 60px;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            background-image:
-                radial-gradient(ellipse at 15% 5%, rgba(232, 99, 10, 0.04) 0%, transparent 55%),
-                radial-gradient(ellipse at 85% 92%, rgba(232, 140, 23, 0.05) 0%, transparent 55%),
-                radial-gradient(ellipse at 50% 40%, rgba(232, 96, 140, 0.03) 0%, transparent 60%);
-            background-attachment: fixed;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        .food-rain-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 0; overflow: hidden;
-        }
-
-        .food-emoji {
-            position: absolute; top: -60px; font-size: 32px;
-            animation: fall linear infinite; opacity: 0.7;
-            pointer-events: none; user-select: none;
-        }
-
-        @keyframes fall {
-            0% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
-            80% { opacity: 0.6; }
-            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
-        }
-
-        .app-container {
-            width: 100%; max-width: 580px; display: flex;
-            flex-direction: column; gap: 24px; position: relative; z-index: 1;
-        }
-
-        .status-banner {
-            background: #FFFFFF; border: 1px solid var(--border); border-radius: 12px;
-            padding: 10px 16px; font-size: 0.9rem; color: var(--text-secondary);
-            box-shadow: var(--shadow-sm); transition: opacity 0.5s ease, transform 0.3s ease;
-            display: flex; align-items: center; gap: 8px; opacity: 1; transform: translateY(0);
-        }
-        .status-banner.success { border-left: 4px solid #2E7D32; }
-        .status-banner.warning { border-left: 4px solid #E8A317; }
-        .status-banner.info    { border-left: 4px solid #1976D2; }
-        .status-banner.fade-out { opacity: 0; transform: translateY(-10px); pointer-events: none; }
-
-        .header { text-align: center; padding: 12px 0 4px; }
-        .header-icon {
-            font-size: 52px; display: block; margin-bottom: 4px;
-            animation: floatIcon 3s ease-in-out infinite;
-            filter: drop-shadow(0 4px 12px rgba(232, 99, 10, 0.2));
-        }
-        @keyframes floatIcon {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        .header h1 {
-            font-family: var(--font-heading); font-size: 2.2rem; font-weight: 800;
-            letter-spacing: 0.04em; color: var(--text); line-height: 1.2;
-        }
-        .header h1 .accent { color: var(--primary); }
-        .header .subtitle {
-            font-size: 0.95rem; color: var(--text-muted); margin-top: 4px;
-            letter-spacing: 0.03em; font-weight: 500;
-        }
-
-        .form-card {
-            background: var(--card-bg); border-radius: var(--radius-lg);
-            padding: 24px 24px 20px; box-shadow: var(--shadow-sm), 0 2px 6px rgba(0,0,0,0.02);
-            border: 1px solid var(--border); transition: box-shadow var(--transition), border-color var(--transition);
-        }
-        .form-card:focus-within {
-            box-shadow: var(--shadow-lg), 0 0 0 4px rgba(232, 99, 10, 0.07);
-            border-color: #F0C4A0;
-        }
-        .form-title {
-            font-family: var(--font-heading); font-weight: 700; font-size: 1.05rem;
-            color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
-        }
-        .form-title .dot {
-            width: 10px; height: 10px; border-radius: 50%; background: var(--primary);
-            animation: pulseDot 1.8s ease-in-out infinite;
-        }
-        @keyframes pulseDot {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.8); opacity: 0.35; }
-        }
-        .form-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
-        .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 140px; }
-        .form-group label {
-            font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.02em;
-        }
-        .form-group input, .form-group select, .form-group textarea {
-            font-family: var(--font-body); font-size: 0.95rem; padding: 12px 15px;
-            border: 1.5px solid var(--border); border-radius: 12px; background: #FEFCF9;
-            color: var(--text); transition: all var(--transition); outline: none; width: 100%;
-            letter-spacing: 0.02em; resize: vertical; box-shadow: 0 1px 2px rgba(0,0,0,0.02) inset;
-        }
-        .form-group input::placeholder, .form-group textarea::placeholder { color: #C4B8AE; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 4px rgba(232, 99, 10, 0.07), 0 1px 4px rgba(0,0,0,0.05);
-            background: #FFFFFF;
-        }
-        .form-group select {
-            cursor: pointer; appearance: none; -webkit-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B5E56' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 12px center; padding-right: 40px;
-        }
-        .form-group textarea { min-height: 75px; max-height: 150px; line-height: 1.5; border-radius: 12px; }
-        .btn-submit {
-            font-family: var(--font-heading); font-weight: 700; font-size: 1rem;
-            padding: 12px 28px; background: var(--primary); color: #FFFFFF; border: none;
-            border-radius: 14px; cursor: pointer; letter-spacing: 0.04em;
-            transition: all var(--transition); white-space: nowrap;
-            box-shadow: 0 4px 14px rgba(232, 99, 10, 0.3); min-width: 90px; height: 48px;
-            display: inline-flex; align-items: center; justify-content: center;
-        }
-        .btn-submit:hover {
-            background: var(--primary-hover); box-shadow: 0 6px 20px rgba(232, 99, 10, 0.4);
-            transform: translateY(-2px);
-        }
-        .btn-submit:active {
-            transform: translateY(1px) scale(0.97); box-shadow: 0 2px 10px rgba(232, 99, 10, 0.3);
-            transition: all 0.1s;
-        }
-
-        .filters-section { display: flex; flex-direction: column; gap: 12px; }
-        .filter-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .filter-label {
-            font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
-            letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
-        }
-        .filter-btn {
-            font-family: var(--font-body); font-size: 0.85rem; font-weight: 600;
-            padding: 8px 18px; border-radius: 22px; border: 1.5px solid var(--border);
-            background: var(--card-bg); color: var(--text-secondary); cursor: pointer;
-            transition: all var(--transition); letter-spacing: 0.03em; white-space: nowrap;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-        }
-        .filter-btn:hover {
-            border-color: #D4C5B8; color: var(--text); background: #FEFCF9;
-            transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-        .filter-btn.active {
-            background: var(--primary); color: #FFFFFF; border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(232, 99, 10, 0.3); font-weight: 700;
-        }
-        .filter-btn.cat-noodle.active { background: var(--cat-noodle); border-color: var(--cat-noodle); }
-        .filter-btn.cat-snack.active { background: var(--cat-snack); border-color: var(--cat-snack); }
-        .filter-btn.cat-dessert.active { background: var(--cat-dessert); border-color: var(--cat-dessert); }
-        .filter-btn.cat-cake.active { background: var(--cat-cake); border-color: var(--cat-cake); }
-
-        .count-bar {
-            font-size: 0.85rem; color: var(--text-muted); font-weight: 500;
-            letter-spacing: 0.03em; padding: 0 6px; display: flex; align-items: center; gap: 6px;
-        }
-        .count-num { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
-
-        .records-list { display: flex; flex-direction: column; gap: 14px; }
-
-        .empty-state {
-            text-align: center; padding: 48px 28px 40px; background: var(--card-bg);
-            border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1.5px dashed var(--border);
-        }
-        .empty-icon { font-size: 60px; display: block; margin-bottom: 12px; opacity: 0.8; }
-        .empty-text {
-            font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem;
-            color: var(--text-secondary); margin-bottom: 6px;
-        }
-        .empty-hint { font-size: 0.9rem; color: var(--text-muted); }
-
-        .record-card {
-            background: var(--card-bg); border-radius: var(--radius-md); padding: 18px 20px;
-            box-shadow: var(--shadow-sm), 0 2px 4px rgba(0,0,0,0.02); border: 1px solid var(--border);
-            transition: all var(--transition); animation: cardSlideIn 0.4s ease-out;
-        }
-        @keyframes cardSlideIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .record-card:hover {
-            box-shadow: var(--shadow-md), 0 6px 18px rgba(0,0,0,0.06);
-            border-color: #DDD0C4; transform: translateY(-2px);
-        }
-        .card-top {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
-        }
-        .category-tag {
-            font-size: 0.75rem; font-weight: 700; padding: 5px 12px; border-radius: 16px;
-            letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        }
-        .cat-noodle-tag { background: var(--cat-noodle-bg); color: var(--cat-noodle); }
-        .cat-snack-tag { background: var(--cat-snack-bg); color: var(--cat-snack); }
-        .cat-dessert-tag { background: var(--cat-dessert-bg); color: var(--cat-dessert); }
-        .cat-cake-tag { background: var(--cat-cake-bg); color: var(--cat-cake); }
-
-        .card-shop-name {
-            font-family: var(--font-heading); font-weight: 700; font-size: 1.2rem;
-            color: var(--text); margin-bottom: 8px; letter-spacing: 0.03em;
-            line-height: 1.35; word-break: break-word;
-        }
-        .card-review {
-            font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 10px;
-            line-height: 1.55; word-break: break-word; background: #FDFBFA;
-            padding: 10px 14px; border-radius: 12px; border-left: 4px solid var(--primary-light);
-        }
-        .card-meta {
-            font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px;
-            letter-spacing: 0.03em; display: flex; align-items: center; gap: 6px;
-        }
-        .card-actions {
-            display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px;
-        }
-        .btn-like, .btn-dislike {
-            font-weight: 700; font-size: 0.88rem; padding: 8px 18px; border-radius: 22px;
-            cursor: pointer; transition: all var(--transition); letter-spacing: 0.03em;
-            display: inline-flex; align-items: center; gap: 6px; min-width: 56px;
-            justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        }
-        .btn-like { background: #FFF6EF; border: 1.5px solid #FDE0CC; color: var(--primary); }
-        .btn-like:hover { background: #FFEBDB; border-color: #F5C49E; box-shadow: 0 4px 12px rgba(232,99,10,0.15); transform: scale(1.05); }
-        .btn-dislike { background: #FFF5F5; border: 1.5px solid #F5C6CB; color: #D32F2F; }
-        .btn-dislike:hover { background: #FFEBEE; border-color: #EF9A9A; box-shadow: 0 4px 12px rgba(211,47,47,0.18); transform: scale(1.05); }
-
-        .btn-toggle-reply {
-            font-size: 0.82rem; background: #FAFAFA; border: 1.5px solid transparent;
-            color: var(--text-muted); cursor: pointer; padding: 5px 12px; border-radius: 16px;
-            transition: all var(--transition); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;
-        }
-        .btn-toggle-reply:hover { background: #F0F0F0; border-color: var(--border); color: var(--text); }
-
-        .reply-section { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px; }
-        .reply-list { list-style: none; margin: 0 0 8px 0; padding: 0; }
-        .reply-item {
-            font-size: 0.88rem; color: var(--text-secondary); padding: 7px 12px;
-            background: #F9F7F5; border-radius: 10px; margin-bottom: 6px;
-            word-break: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-        }
-        .reply-input-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
-        .reply-input {
-            flex: 1; font-family: var(--font-body); font-size: 0.88rem; padding: 9px 14px;
-            border: 1.5px solid var(--border); border-radius: 18px; outline: none;
-            background: #FEFCF9; transition: border-color var(--transition), box-shadow var(--transition);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02) inset;
-        }
-        .reply-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(232, 99, 10, 0.07); }
-        .btn-reply-submit {
-            font-size: 0.85rem; font-weight: 700; padding: 9px 18px; border-radius: 18px;
-            border: none; background: var(--primary-light); color: var(--primary); cursor: pointer;
-            white-space: nowrap; transition: all var(--transition); box-shadow: 0 2px 6px rgba(232,99,10,0.1);
-        }
-        .btn-reply-submit:hover { background: #FFE0C8; box-shadow: 0 4px 10px rgba(232,99,10,0.15); transform: translateY(-1px); }
-
-        .toast {
-            position: fixed; bottom: 32px; left: 50%;
-            transform: translateX(-50%) translateY(100px); background: #2D2420;
-            color: #FFFFFF; padding: 12px 24px; border-radius: 28px; font-weight: 600;
-            font-size: 0.9rem; letter-spacing: 0.04em; z-index: 999; pointer-events: none;
-            transition: transform 0.4s cubic-bezier(0.22,0.61,0.36,1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); white-space: nowrap;
-        }
-        .toast.show { transform: translateX(-50%) translateY(0); }
-
-        .btn-test-write {
-            font-size: 0.7rem; background: none; border: 1px dashed var(--border);
-            color: var(--text-muted); padding: 4px 10px; border-radius: 12px; cursor: pointer;
-        }
-
-        @media (max-width: 480px) {
-            .app-container { gap: 18px; }
-            .header h1 { font-size: 1.8rem; }
-            .header-icon { font-size: 42px; }
-            .form-card { padding: 18px 18px 16px; }
-            .form-row { flex-direction: column; gap: 10px; }
-            .form-group { min-width: 100%; }
-            .btn-submit { width: 100%; height: 46px; }
-            .record-card { padding: 16px 16px; }
-            .card-shop-name { font-size: 1.1rem; }
-            .filter-btn { font-size: 0.8rem; padding: 6px 14px; }
-            .filter-label { font-size: 0.75rem; }
-            .btn-like, .btn-dislike { font-size: 0.85rem; padding: 7px 14px; }
-            .reply-input { font-size: 0.85rem; padding: 8px 12px; }
-        }
-    </style>
-</head>
-<body>
-    <div class="food-rain-container" id="foodRainContainer"></div>
-
-    <div class="app-container">
-        <div class="header">
-            <span class="header-icon">🍜</span>
-            <h1>滋味<span class="accent">外賣墻</span></h1>
-            <p class="subtitle">匿名評價 · 食遍四方 · 滋味分享</p>
-        </div>
-
-        <div id="statusBanner" class="status-banner info" style="display: none;"></div>
-
-        <div class="form-card" id="formCard">
-            <div class="form-title">
-                <span class="dot"></span> 新增外賣評價
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="inputContent">🍽️ 外賣店鋪名稱 *</label>
-                    <input type="text" id="inputContent" placeholder="例如：阿明粉麵" maxlength="60" autocomplete="off">
-                </div>
-                <div class="form-group" style="max-width:160px;">
-                    <label for="inputCategory">📂 分類</label>
-                    <select id="inputCategory">
-                        <option value="粉麵">🍜 粉麵</option>
-                        <option value="小食">🍟 小食</option>
-                        <option value="甜品飲料">🧋 甜品飲料</option>
-                        <option value="蛋糕">🍰 蛋糕</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group" style="margin-top: 10px;">
-                <label for="inputReview">📝 評價感想（選填）</label>
-                <textarea id="inputReview" placeholder="寫下你對這間外賣嘅感受⋯⋯" maxlength="200"></textarea>
-            </div>
-            <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center;">
-                <button class="btn-test-write" id="btnTestWrite" type="button" title="測試寫入一筆測試資料">🧪 測試寫入 Sheet</button>
-                <button class="btn-submit" id="btnSubmit" type="button">➕ 提交評價</button>
-            </div>
-        </div>
-
-        <div class="filters-section" id="filtersSection">
-            <div class="filter-group" id="categoryFilterGroup">
-                <span class="filter-label">🏷️ 分類</span>
-                <button class="filter-btn active" data-category-filter="all">全部</button>
-                <button class="filter-btn cat-noodle" data-category-filter="粉麵">🍜 粉麵</button>
-                <button class="filter-btn cat-snack" data-category-filter="小食">🍟 小食</button>
-                <button class="filter-btn cat-dessert" data-category-filter="甜品飲料">🧋 甜品飲料</button>
-                <button class="filter-btn cat-cake" data-category-filter="蛋糕">🍰 蛋糕</button>
-            </div>
-        </div>
-
-        <div class="count-bar" id="countBar">
-            共 <span class="count-num" id="countNum">0</span> 條評價
-        </div>
-
-        <div class="records-list" id="recordsList"></div>
+<!-- 分類按鈕 -->
+    <div class="module-bar">
+      <button class="mod-pill" id="mod-p1315" onclick="setModule('p1315')">📘 P.13-15 (圖表/比例)</button>
+      <button class="mod-pill" id="mod-p20" onclick="setModule('p20')">📙 P.20 (寫作範文詞)</button>
+      <button class="mod-pill active" id="mod-pathway" onclick="setModule('pathway')">📗 Pathway 4 (重點詞彙)</button>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <!-- 首頁總覽看板 -->
+    <div id="view-dashboard">
+      <div class="stat-cards">
+        <div class="stat-card c-mastered">
+          <span class="stat-num" id="count-mastered">0</span>
+          <span class="stat-label">完全熟悉 (連對 3 次+)</span>
+        </div>
+        <div class="stat-card c-familiar">
+          <span class="stat-num" id="count-familiar">0</span>
+          <span class="stat-label">未算太熟悉 (連對 1~2 次)</span>
+        </div>
+        <div class="stat-card c-unfamiliar">
+          <span class="stat-num" id="count-unfamiliar">0</span>
+          <span class="stat-label">完全不熟悉 (待鞏固)</span>
+        </div>
+      </div>
 
-    <script>
-        (function() {
-            const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMIL1PEYVeRTfMXX2kHG2_4goNTMtPxtRtwc2SastUkud12m9qOwSRM368fqnK8pgwrg/exec";
+      <div class="category-group">
+        <div class="category-title" style="color: var(--unfamiliar);">
+          <span>🔴 完全不熟悉 / 待重溫</span>
+          <span class="tag-count" style="background: var(--unfamiliar);" id="badge-unfamiliar">0</span>
+        </div>
+        <div class="vocab-list" id="list-unfamiliar"></div>
+      </div>
 
-            const inputContent = document.getElementById('inputContent');
-            const inputCategory = document.getElementById('inputCategory');
-            const inputReview = document.getElementById('inputReview');
-            const btnSubmit = document.getElementById('btnSubmit');
-            const recordsList = document.getElementById('recordsList');
-            const countNum = document.getElementById('countNum');
-            const toast = document.getElementById('toast');
-            const categoryFilterGroup = document.getElementById('categoryFilterGroup');
-            const statusBanner = document.getElementById('statusBanner');
-            const btnTestWrite = document.getElementById('btnTestWrite');
+      <div class="category-group">
+        <div class="category-title" style="color: var(--familiar);">
+          <span>🟡 未算太熟悉 / 掌握中</span>
+          <span class="tag-count" style="background: var(--familiar);" id="badge-familiar">0</span>
+        </div>
+        <div class="vocab-list" id="list-familiar"></div>
+      </div>
 
-            let currentCategoryFilter = 'all';
-            let toastTimer = null;
+      <div class="category-group">
+        <div class="category-title" style="color: var(--mastered);">
+          <span>🟢 完全熟悉</span>
+          <span class="tag-count" style="background: var(--mastered);" id="badge-mastered">0</span>
+        </div>
+        <div class="vocab-list" id="list-mastered"></div>
+      </div>
 
-            // 互動資料存儲
-            let dislikesMap = JSON.parse(localStorage.getItem('dislikesMap') || '{}');
-            let repliesMap = JSON.parse(localStorage.getItem('repliesMap') || '{}');
+      <div style="text-align: center; margin-top: 30px;">
+        <button class="btn-reset" onclick="resetAllProgress()">重設當前分類答題紀錄</button>
+      </div>
+    </div>
 
-            function saveDislikesAndReplies() {
-                localStorage.setItem('dislikesMap', JSON.stringify(dislikesMap));
-                localStorage.setItem('repliesMap', JSON.stringify(repliesMap));
-            }
+    <!-- 配對測驗頁面 -->
+    <div id="view-quiz" style="display: none;">
+      <div class="quiz-status">
+        <span id="quiz-mod-title">當前分區</span>
+        <span id="quiz-progress">0 / 6</span>
+      </div>
 
-            function showStatus(message, type = 'info') {
-                statusBanner.style.display = 'flex';
-                statusBanner.textContent = message;
-                statusBanner.className = 'status-banner ' + type;
-                if (statusBanner._timeout) clearTimeout(statusBanner._timeout);
-                statusBanner._timeout = setTimeout(() => {
-                    statusBanner.classList.add('fade-out');
-                    setTimeout(() => {
-                        statusBanner.style.display = 'none';
-                        statusBanner.classList.remove('fade-out');
-                    }, 500);
-                }, 5000);
-            }
+      <div class="grid">
+        <div class="col" id="col-left"></div>
+        <div class="col" id="col-right"></div>
+      </div>
 
-            function showToast(message, duration = 2500) {
-                if (toastTimer) clearTimeout(toastTimer);
-                toast.textContent = message;
-                toast.classList.add('show');
-                toastTimer = setTimeout(() => {
-                    toast.classList.remove('show');
-                    toastTimer = null;
-                }, duration);
-            }
+      <div class="quiz-footer">
+        <div id="quiz-feedback" style="min-height: 24px; font-weight: 700; color: var(--mastered);"></div>
+        <button class="btn-action" onclick="startQuizRound()">換下一組挑戰 (6題)</button>
+      </div>
+    </div>
+  </div>
 
-            // 核心記錄存儲（不包含 dislikes/replies）
-            function loadData() {
-                try {
-                    const raw = localStorage.getItem('records');
-                    if (!raw) return [];
-                    const parsed = JSON.parse(raw);
-                    if (!Array.isArray(parsed)) return [];
-                    return parsed;
-                } catch (e) {
-                    console.error('loadData error:', e);
-                    return [];
-                }
-            }
+  <script>
+    const database = {
+      // 模組一：P.13 - 15 (圖表趨勢、比例與介詞)
+      p1315: [
+        { id: 101, left: "Sharply", right: "急劇地" },
+        { id: 102, left: "rapidly", right: "迅速地" },
+        { id: 103, left: "steeply", right: "陡峭地" },
+        { id: 104, left: "dramatically", right: "顯著地" },
+        { id: 105, left: "drastically", right: "劇烈地" },
+        { id: 106, left: "markedly", right: "明顯地" },
+        { id: 107, left: "substantially", right: "大幅度地" },
+        { id: 108, left: "significantly", right: "顯著地" },
+        { id: 109, left: "gradually", right: "漸進地" },
+        { id: 110, left: "steadily", right: "穩定地" },
+        { id: 111, left: "suddenly", right: "突然地" },
+        { id: 112, left: "moderately", right: "適度地" },
+        { id: 113, left: "slightly", right: "輕微地" },
+        { id: 114, left: "slowly", right: "緩慢地" },
+        { id: 115, left: "similarly", right: "同樣地" },
+        { id: 116, left: "equally", right: "相等地" },
+        { id: 117, left: "respectively", right: "分別地" },
+        { id: 118, left: "stably", right: "平穩地" },
+        { id: 119, left: "constantly", right: "持續地" },
+        { id: 120, left: "consistently", right: "一貫地" },
+        { id: 121, left: "<5%", right: "a tiny fraction" },
+        { id: 122, left: "10%", right: "one in ten" },
+        { id: 123, left: "~25%", right: "almost/nearly a quarter" },
+        { id: 124, left: "=25%", right: "roughly one quarter" },
+        { id: 125, left: "~33%", right: "almost/nearly one-third" },
+        { id: 126, left: "~50%", right: "around a half" },
+        { id: 127, left: "51%", right: "just over a half" },
+        { id: 128, left: "<=75%", right: "nearly/almost three quarters" },
+        { id: 129, left: "<2%", right: "a tiny portion" },
+        { id: 130, left: "<5%", right: "an insignificant minority" },
+        { id: 131, left: "<15%", right: "a small minority" },
+        { id: 132, left: ">50%", right: "the majority" },
+        { id: 133, left: "70%", right: "a large proportion" },
+        { id: 134, left: "75%", right: "a significant majority" },
+        { id: 135, left: "90%", right: "a very large proportion" },
+        { id: 136, left: "gap", right: "a large gap between ... and ..." },
+        { id: 137, left: "at", right: "指出精確數值或頂點 (peak at)" },
+        { id: 138, left: "to", right: "指出趨勢最終到達點 (rose to)" },
+        { id: 139, left: "by", right: "指出增減的差額幅度 (rose by)" },
+        { id: 140, left: "from ... to ...", right: "指出起點與終點" },
+        { id: 141, left: "of", right: "名詞後直接接數值 (a high of)" }
+      ],
 
-            function saveData(record) {
-                const records = loadData();
-                records.push(record);
-                localStorage.setItem('records', JSON.stringify(records));
-            }
+      // 模組二：P.20 (科技與職場就業·實戰高分詞組)
+      p20: [
+        { id: 201, left: "technological breakthroughs", right: "技術突破" },
+        { id: 202, left: "dire shortage of jobs", right: "極度缺乏職位" },
+        { id: 203, left: "sophisticated machines", right: "精密/複雜的機器" },
+        { id: 204, left: "assembly-line automation", right: "流水線自動化" },
+        { id: 205, left: "excel at", right: "擅長於..." },
+        { id: 206, left: "repetitive tasks", right: "重複性任務" },
+        { id: 207, left: "taking inventory", right: "盤點庫存" },
+        { id: 208, left: "collaborative ecosystem", right: "人機協同生態系統" },
+        { id: 209, left: "optimizing operational efficiency", right: "優化營運效率" },
+        { id: 210, left: "inevitable fact", right: "不可避免的事實" },
+        { id: 211, left: "tactile feedback", right: "觸覺反饋 / 手感" },
+        { id: 212, left: "delicate assignments", right: "精細/細緻的任務" },
+        { id: 213, left: "common sense", right: "常識 / 應變判斷" },
+        { id: 214, left: "wipe out the workforce", right: "徹底取代/消滅勞動力" },
+        { id: 215, left: "human input", right: "人類的投入與參與" },
+        { id: 216, left: "adapt and evolve", right: "適應並進化" },
+        { id: 217, left: "lacks the capacity for", right: "缺乏...的能力" },
+        { id: 218, left: "providing the impetus", right: "提供推動力/動機" }
+      ],
 
-            function updateRecord(id, changes) {
-                const records = loadData();
-                const index = records.findIndex(r => r.id === id);
-                if (index === -1) return;
-                records[index] = { ...records[index], ...changes };
-                localStorage.setItem('records', JSON.stringify(records));
-            }
+      // 模組三：Pathway 4 Unit 1 課文重點 Highlight 詞彙（精確提取）
+      pathway: [
+        // 相片一 (p.7) 標註單詞
+        { id: 301, left: "coined", right: "創造(新詞語)" },
+        { id: 302, left: "set the template", right: "樹立典範 / 定下範本" },
+        { id: 303, left: "curtain falls", right: "落幕 / 結束" },
+        { id: 304, left: "imaginary", right: "想像的 / 虛構的" },
+        { id: 305, left: "droids", right: "機器人 (如星戰)" },
+        { id: 306, left: "turbines", right: "渦輪機" },
+        { id: 307, left: "horizon", right: "地平線" },
+        { id: 308, left: "three-armed", right: "三臂的" },
+        { id: 309, left: "foundation", right: "地基 / 基礎" },
+        { id: 310, left: "excavator", right: "挖掘機 / 鏟泥車" },
+        { id: 311, left: "operator", right: "操作員" },
+        { id: 312, left: "gyroscope", right: "陀螺儀" },
+        { id: 313, left: "co-founder", right: "共同創辦人" },
+        { id: 314, left: "circuit", right: "電路" },
+        { id: 315, left: "wires", right: "導線 / 電線" },
+        { id: 316, left: "commands", right: "指令 / 命令" },
+        { id: 317, left: "joysticks", right: "操作桿 / 搖桿" },
+        { id: 318, left: "pedals", right: "踏板" },
 
-            // 與 Google Sheet 同步
-            async function syncToSheet(payload) {
-                try {
-                    const response = await fetch(APPS_SCRIPT_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "text/plain" },
-                        body: JSON.stringify(payload)
-                    });
-                    const result = await response.json();
-                    if (!result.ok) {
-                        console.error("❌ Sheet 同步失敗:", result.error);
-                        showToast(`⚠️ 同步失敗：${result.error || '未知錯誤'}`);
-                        return false;
-                    }
-                    console.log("✅ Sheet 同步成功", result);
-                    return true;
-                } catch (err) {
-                    console.error("❌ 網路錯誤:", err);
-                    showToast('⚠️ 無法連線到 Google Sheet');
-                    return false;
-                }
-            }
+        // 相片二 (p.8-9) 標註單詞
+        { id: 319, left: "encounter", right: "偶遇 / 遇到" },
+        { id: 320, left: "industrial", right: "工業的" },
+        { id: 321, left: "fenced", right: "被圍住 / 隔開的" },
+        { id: 322, left: "accelerating", right: "加速" },
+        { id: 323, left: "sturdier", right: "更堅固結實的" },
+        { id: 324, left: "beehive", right: "蜂巢" },
+        { id: 325, left: "fetch", right: "取來 / 拿來" },
+        { id: 326, left: "mailing", right: "郵寄" },
+        { id: 327, left: "autistic", right: "自閉症的" },
+        { id: 328, left: "disinfect", right: "消毒" },
+        { id: 329, left: "zeitgeist", right: "時代精神 / 時代思潮" },
+        { id: 330, left: "insurance", right: "保險" },
+        { id: 331, left: "incentives", right: "誘因 / 獎勵機制" },
+        { id: 332, left: "executives", right: "管理高層 / 執行官" },
 
-            async function fetchRecordsFromSheet() {
-                try {
-                    const response = await fetch(APPS_SCRIPT_URL);
-                    const data = await response.json();
-                    if (data.ok && Array.isArray(data.records)) {
-                        return data.records.map(normalizeRecord);
-                    }
-                    console.warn("fetchRecordsFromSheet: invalid response", data);
-                    return [];
-                } catch (err) {
-                    console.error("fetchRecordsFromSheet error:", err);
-                    throw err;
-                }
-            }
+        // 相片三 (p.10) 標註單詞
+        { id: 333, left: "plenty", right: "大量 / 充足" },
+        { id: 334, left: "bulldozer", right: "推土機" },
+        { id: 335, left: "ramps", right: "斜坡 / 坡道" },
+        { id: 336, left: "harvest lettuce", right: "採收生菜 / 萵苣" },
+        { id: 337, left: "manufacturing", right: "製造業 / 生產" },
+        { id: 338, left: "tournament", right: "錦標賽 / 聯賽" },
+        { id: 339, left: "spur", right: "促進 / 激勵" },
+        { id: 340, left: "continents", right: "大洲 / 大陸" },
+        { id: 341, left: "bipedal", right: "雙足行走的" },
+        { id: 342, left: "maximize", right: "使最大化" },
+        { id: 343, left: "relate to", right: "理解 / 與...產生共鳴" },
+        { id: 344, left: "master", right: "精通 / 掌握" }
+      ]
+    };
 
-            // 將 Sheet 資料標準化，並保留 dislikes 與 replies 欄位
-            function normalizeRecord(raw) {
-                const keyMap = {
-                    id: 'id', createdat: 'createdAt', '建立時間': 'createdAt',
-                    content: 'content', '店鋪名稱': 'content',
-                    category: 'category', '分類': 'category',
-                    review: 'review', '評價感想': 'review',
-                    likes: 'likes', '讚數': 'likes',
-                    dislikes: 'dislikes', '反對數': 'dislikes',
-                    replies: 'replies', '回應': 'replies'
-                };
-                const record = {
-                    id: '',
-                    createdAt: '',
-                    content: '',
-                    category: '',
-                    review: '',
-                    likes: 0,
-                    dislikes: 0,
-                    replies: '[]'
-                };
-                Object.keys(raw).forEach(rawKey => {
-                    const lowerKey = String(rawKey).toLowerCase().trim();
-                    const mapped = keyMap[lowerKey] || keyMap[rawKey.trim()] || null;
-                    if (mapped) record[mapped] = raw[rawKey];
-                });
-                // 類型校正
-                record.likes = Number(record.likes) || 0;
-                record.dislikes = Number(record.dislikes) || 0;
-                record.review = record.review || '';
-                // 確保 replies 為字串
-                if (typeof record.replies !== 'string') record.replies = '[]';
-                return record;
-            }
+    let currentModule = 'pathway'; // 預設打開 Pathway 4 方便即刻溫習
+    let currentView = 'dashboard';
+    let stats = JSON.parse(localStorage.getItem('vocab_stats_multimod_v3') || '{}');
 
-            // 建立新記錄時，加入 dislikes 與 replies 初始值
-            function createRecord(formData) {
-                const record = {
-                    id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
-                    createdAt: new Date().toISOString(),
-                    content: formData.content.trim(),
-                    category: formData.category,
-                    review: formData.review ? formData.review.trim() : '',
-                    likes: 0,
-                    dislikes: 0,
-                    replies: '[]'   // 空陣列 JSON 字串
-                };
-                saveData(record); // 存入 localStorage (會剝離 dislikes/replies? 需要保持一致)
-                // 注意：saveData 直接 push record，這樣 localStorage 會包含 dislikes/replies。
-                // 但 loadData 只會使用核心欄位渲染，多了無妨，但為了一致性，我們可以在 saveData 中只保留核心欄位。
-                // 修改 saveData 以僅儲存核心六欄位。
-                return record;
-            }
+    function saveStats() {
+      localStorage.setItem('vocab_stats_multimod_v3', JSON.stringify(stats));
+    }
 
-            // 覆寫 saveData，只儲存核心欄位至 localStorage
-            const originalSaveData = saveData;
-            saveData = function(record) {
-                const coreRecord = {
-                    id: record.id,
-                    createdAt: record.createdAt,
-                    content: record.content,
-                    category: record.category,
-                    review: record.review,
-                    likes: record.likes
-                };
-                const records = loadData();
-                records.push(coreRecord);
-                localStorage.setItem('records', JSON.stringify(records));
-            };
+    function setModule(mod) {
+      currentModule = mod;
+      ['p1315', 'p20', 'pathway'].forEach(m => {
+        document.getElementById(`mod-${m}`).className = 'mod-pill' + (m === mod ? ' active' : '');
+      });
+      if (currentView === 'dashboard') {
+        renderDashboard();
+      } else {
+        startQuizRound();
+      }
+    }
 
-            function formatDate(isoString) {
-                try {
-                    const d = new Date(isoString);
-                    if (isNaN(d.getTime())) return isoString;
-                    const year = d.getFullYear();
-                    const month = String(d.getMonth() + 1).padStart(2, '0');
-                    const day = String(d.getDate()).padStart(2, '0');
-                    const hours = String(d.getHours()).padStart(2, '0');
-                    const minutes = String(d.getMinutes()).padStart(2, '0');
-                    return `${year}-${month}-${day} ${hours}:${minutes}`;
-                } catch (e) { return isoString; }
-            }
+    function switchView(view) {
+      currentView = view;
+      document.getElementById('view-dashboard').style.display = view === 'dashboard' ? 'block' : 'none';
+      document.getElementById('view-quiz').style.display = view === 'quiz' ? 'block' : 'none';
+      document.getElementById('nav-dashboard').className = 'nav-btn' + (view === 'dashboard' ? ' active' : '');
+      document.getElementById('nav-quiz').className = 'nav-btn' + (view === 'quiz' ? ' active' : '');
 
-            function getCategoryEmoji(category) {
-                const map = { '粉麵': '🍜', '小食': '🍟', '甜品飲料': '🧋', '蛋糕': '🍰' };
-                return map[category] || '📦';
-            }
+      if (view === 'dashboard') renderDashboard();
+      else startQuizRound();
+    }
 
-            function getCategoryTagClass(category) {
-                const map = { '粉麵': 'cat-noodle-tag', '小食': 'cat-snack-tag', '甜品飲料': 'cat-dessert-tag', '蛋糕': 'cat-cake-tag' };
-                return map[category] || '';
-            }
+    function getLevel(id) {
+      const rec = stats[id];
+      if (!rec || !rec.streak || rec.streak <= 0) return "unfamiliar";
+      if (rec.streak >= 3) return "mastered";
+      return "familiar";
+    }
 
-            function renderList(recordsToShow) {
-                const sorted = [...recordsToShow].sort((a, b) => {
-                    const timeA = new Date(a.createdAt).getTime();
-                    const timeB = new Date(b.createdAt).getTime();
-                    if (isNaN(timeA) && isNaN(timeB)) return 0;
-                    if (isNaN(timeA)) return 1;
-                    if (isNaN(timeB)) return -1;
-                    return timeB - timeA;
-                });
+    function renderDashboard() {
+      const curData = database[currentModule];
+      const groups = { mastered: [], familiar: [], unfamiliar: [] };
 
-                countNum.textContent = sorted.length;
+      curData.forEach(item => {
+        const lvl = getLevel(item.id);
+        groups[lvl].push(item);
+      });
 
-                if (sorted.length === 0) {
-                    const isFiltering = currentCategoryFilter !== 'all';
-                    recordsList.innerHTML = `
-                        <div class="empty-state">
-                            <span class="empty-icon">${isFiltering ? '🔍' : '📝'}</span>
-                            <p class="empty-text">${isFiltering ? '沒有符合分類的評價' : '尚未有任何評價'}</p>
-                            <p class="empty-hint">${isFiltering ? '試試調整分類篩選吧～' : '快啲喺上面新增第一條評價啦！'}</p>
-                        </div>
-                    `;
-                    return;
-                }
+      document.getElementById('count-mastered').textContent = groups.mastered.length;
+      document.getElementById('count-familiar').textContent = groups.familiar.length;
+      document.getElementById('count-unfamiliar').textContent = groups.unfamiliar.length;
 
-                let html = '';
-                sorted.forEach(record => {
-                    const catEmoji = getCategoryEmoji(record.category);
-                    const catTagClass = getCategoryTagClass(record.category);
-                    const formattedDate = formatDate(record.createdAt);
-                    const reviewHtml = record.review ? `<div class="card-review">${escapeHtml(record.review)}</div>` : '';
-                    
-                    const dislikeCount = dislikesMap[record.id] || 0;
-                    const replies = repliesMap[record.id] || [];
+      document.getElementById('badge-mastered').textContent = groups.mastered.length;
+      document.getElementById('badge-familiar').textContent = groups.familiar.length;
+      document.getElementById('badge-unfamiliar').textContent = groups.unfamiliar.length;
 
-                    let repliesHtml = '';
-                    if (replies.length > 0) {
-                        repliesHtml = '<ul class="reply-list">';
-                        replies.forEach(reply => {
-                            repliesHtml += `<li class="reply-item">${escapeHtml(reply)}</li>`;
-                        });
-                        repliesHtml += '</ul>';
-                    }
+      ['mastered', 'familiar', 'unfamiliar'].forEach(lvl => {
+        const container = document.getElementById(`list-${lvl}`);
+        if (groups[lvl].length === 0) {
+          container.innerHTML = '<div style="color:#94a3b8; font-size:0.85rem; padding:8px 0;">暫無此等級項目</div>';
+        } else {
+          container.innerHTML = groups[lvl].map(item => {
+            const streak = (stats[item.id] && stats[item.id].streak) || 0;
+            return `
+              <div class="vocab-row">
+                <div class="vocab-left">
+                  <span class="vocab-en">${item.left}</span>
+                  <span class="streak-badge">連對 ${streak} 次</span>
+                </div>
+                <span class="vocab-target">${item.right}</span>
+              </div>
+            `;
+          }).join('');
+        }
+      });
+    }
 
-                    html += `
-                        <div class="record-card" data-record-id="${escapeHtml(record.id)}">
-                            <div class="card-top">
-                                <span class="category-tag ${catTagClass}">${catEmoji} ${escapeHtml(record.category)}</span>
-                            </div>
-                            <div class="card-shop-name">${escapeHtml(record.content)}</div>
-                            ${reviewHtml}
-                            <div class="card-meta">
-                                <span class="meta-icon">🕒</span> ${formattedDate}
-                            </div>
-                            <div class="card-actions">
-                                <button class="btn-like" data-action="like" data-id="${escapeHtml(record.id)}" data-likes="${record.likes}">
-                                    <span class="like-icon">👍</span>
-                                    <span class="like-count">${record.likes}</span>
-                                </button>
-                                <button class="btn-dislike" data-action="dislike" data-id="${escapeHtml(record.id)}">
-                                    <span class="dislike-icon">👎</span>
-                                    <span class="dislike-count">${dislikeCount}</span>
-                                </button>
-                                <button class="btn-toggle-reply" data-action="toggle-reply" data-id="${escapeHtml(record.id)}">💬 回應</button>
-                            </div>
-                            <div class="reply-section" id="reply-section-${escapeHtml(record.id)}" style="display: none;">
-                                ${repliesHtml}
-                                <div class="reply-input-row">
-                                    <input type="text" class="reply-input" id="reply-input-${escapeHtml(record.id)}" placeholder="寫下你的回應..." maxlength="100">
-                                    <button class="btn-reply-submit" data-action="submit-reply" data-id="${escapeHtml(record.id)}">送出</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
+    let selLeft = null, selRight = null;
+    let currentRoundMatched = 0;
+    const ROUND_SIZE = 6;
 
-                recordsList.innerHTML = html;
-            }
+    function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-            function escapeHtml(str) {
-                const div = document.createElement('div');
-                div.textContent = str;
-                return div.innerHTML;
-            }
+    function startQuizRound() {
+      const lBox = document.getElementById('col-left');
+      const rBox = document.getElementById('col-right');
+      const fb = document.getElementById('quiz-feedback');
+      const curData = database[currentModule];
 
-            function applyFiltersAndRender() {
-                const allRecords = loadData();
-                let filtered = allRecords;
-                if (currentCategoryFilter !== 'all') {
-                    filtered = filtered.filter(r => r.category === currentCategoryFilter);
-                }
-                renderList(filtered);
-                updateFilterButtonStyles();
-            }
+      const modNames = { p1315: '📘 P.13-15', p20: '📙 P.20 寫作詞組', pathway: '📗 Pathway 4 重點詞' };
+      document.getElementById('quiz-mod-title').textContent = `${modNames[currentModule]} 配對`;
 
-            function updateFilterButtonStyles() {
-                const categoryBtns = categoryFilterGroup.querySelectorAll('.filter-btn');
-                categoryBtns.forEach(btn => {
-                    const filterVal = btn.getAttribute('data-category-filter');
-                    btn.classList.toggle('active', filterVal === currentCategoryFilter);
-                });
-            }
+      lBox.innerHTML = ''; rBox.innerHTML = '';
+      fb.textContent = '';
+      selLeft = null; selRight = null;
+      currentRoundMatched = 0;
+      updateQuizProgress();
 
-            // 提交新評價
-            async function handleSubmit() {
-                const content = inputContent.value.trim();
-                const category = inputCategory.value;
-                const review = inputReview.value.trim();
+      const unfamiliarList = curData.filter(d => getLevel(d.id) === 'unfamiliar');
+      const familiarList = curData.filter(d => getLevel(d.id) === 'familiar');
+      const masteredList = curData.filter(d => getLevel(d.id) === 'mastered');
 
-                if (!content) {
-                    showToast('⚠️ 請輸入外賣店鋪名稱');
-                    inputContent.focus();
-                    return;
-                }
-                if (!category) {
-                    showToast('⚠️ 請選擇分類');
-                    return;
-                }
+      let pool = shuffle(unfamiliarList).concat(shuffle(familiarList)).concat(shuffle(masteredList));
+      let roundItems = pool.slice(0, Math.min(ROUND_SIZE, curData.length));
 
-                const newRecord = createRecord({ content, category, review });
-                console.log('📝 新記錄:', newRecord);
+      let shuffledL = shuffle(roundItems);
+      let shuffledR = shuffle(roundItems);
 
-                // 同步到 Sheet（包含 dislikes, replies）
-                const success = await syncToSheet({ action: "create", record: newRecord });
-                if (success) {
-                    showToast('🎉 評價已新增並同步至 Sheet');
-                } else {
-                    showToast('⚠️ 評價已存於本地，但 Sheet 同步失敗');
-                }
+      shuffledL.forEach(item => {
+        let btn = document.createElement('button');
+        btn.className = 'card-btn';
+        btn.textContent = item.left;
+        btn.dataset.id = item.id;
+        btn.onclick = () => {
+          if (btn.classList.contains('matched')) return;
+          if (selLeft) selLeft.classList.remove('selected');
+          selLeft = btn;
+          btn.classList.add('selected');
+          checkAnswer();
+        };
+        lBox.appendChild(btn);
+      });
 
-                inputContent.value = '';
-                inputReview.value = '';
-                inputContent.focus();
-                applyFiltersAndRender();
-            }
+      shuffledR.forEach(item => {
+        let btn = document.createElement('button');
+        btn.className = 'card-btn';
+        btn.textContent = item.right;
+        btn.dataset.id = item.id;
+        btn.onclick = () => {
+          if (btn.classList.contains('matched')) return;
+          if (selRight) selRight.classList.remove('selected');
+          selRight = btn;
+          btn.classList.add('selected');
+          checkAnswer();
+        };
+        rBox.appendChild(btn);
+      });
+    }
 
-            // 按讚
-            async function handleLike(recordId) {
-                const allRecords = loadData();
-                const record = allRecords.find(r => r.id === recordId);
-                if (!record) return;
+    function recordResult(id, isCorrect) {
+      if (!stats[id]) stats[id] = { streak: 0 };
+      if (isCorrect) {
+        stats[id].streak = (stats[id].streak || 0) + 1;
+      } else {
+        stats[id].streak = 0;
+      }
+      saveStats();
+    }
 
-                const newLikes = (record.likes || 0) + 1;
-                updateRecord(recordId, { likes: newLikes });
+    function checkAnswer() {
+      if (!selLeft || !selRight) return;
 
-                const success = await syncToSheet({ action: "update", id: recordId, changes: { likes: newLikes } });
-                if (!success) {
-                    showToast('⚠️ 按讚已記錄，但 Sheet 同步失敗');
-                } else {
-                    showToast(`👍 +1 (${newLikes})`, 1000);
-                }
+      const isMatch = selLeft.dataset.id === selRight.dataset.id;
+      const id = selLeft.dataset.id;
+      const curData = database[currentModule];
+      const maxInRound = Math.min(ROUND_SIZE, curData.length);
 
-                // 立即更新 UI
-                const card = recordsList.querySelector(`[data-record-id="${CSS.escape(recordId)}"]`);
-                if (card) {
-                    const likeBtn = card.querySelector('[data-action="like"]');
-                    if (likeBtn) {
-                        const likeCountSpan = likeBtn.querySelector('.like-count');
-                        if (likeCountSpan) {
-                            likeCountSpan.textContent = newLikes;
-                            likeBtn.setAttribute('data-likes', newLikes);
-                            likeCountSpan.style.transform = 'scale(1.5)';
-                            likeCountSpan.style.transition = 'transform 0.15s ease-out';
-                            setTimeout(() => { likeCountSpan.style.transform = 'scale(1)'; }, 150);
-                        }
-                    }
-                }
-            }
+      if (isMatch) {
+        recordResult(id, true);
+        selLeft.className = 'card-btn matched';
+        selRight.className = 'card-btn matched';
+        selLeft = null; selRight = null;
+        currentRoundMatched++;
+        updateQuizProgress();
 
-            // 反對（倒讚）
-            async function handleDislike(recordId) {
-                dislikesMap[recordId] = (dislikesMap[recordId] || 0) + 1;
-                const newCount = dislikesMap[recordId];
-                saveDislikesAndReplies();
+        if (currentRoundMatched === maxInRound) {
+          document.getElementById('quiz-feedback').textContent = '✨ 完美！本組單詞全部配對成功！';
+        }
+      } else {
+        recordResult(selLeft.dataset.id, false);
+        recordResult(selRight.dataset.id, false);
 
-                // 同步 dislikes 至 Sheet
-                const success = await syncToSheet({ action: "update", id: recordId, changes: { dislikes: newCount } });
-                if (!success) {
-                    showToast('⚠️ 反對已記錄，但 Sheet 同步失敗');
-                } else {
-                    showToast(`👎 +1 (${newCount})`, 1000);
-                }
+        let l = selLeft, r = selRight;
+        l.classList.add('error');
+        r.classList.add('error');
 
-                const card = recordsList.querySelector(`[data-record-id="${CSS.escape(recordId)}"]`);
-                if (card) {
-                    const dislikeBtn = card.querySelector('[data-action="dislike"]');
-                    if (dislikeBtn) {
-                        const countSpan = dislikeBtn.querySelector('.dislike-count');
-                        if (countSpan) {
-                            countSpan.textContent = newCount;
-                            countSpan.style.transform = 'scale(1.5)';
-                            countSpan.style.transition = 'transform 0.15s ease-out';
-                            setTimeout(() => { countSpan.style.transform = 'scale(1)'; }, 150);
-                        }
-                    }
-                }
-            }
+        setTimeout(() => {
+          l.classList.remove('error', 'selected');
+          r.classList.remove('error', 'selected');
+        }, 380);
 
-            // 新增回應
-            async function handleAddReply(recordId, replyText) {
-                if (!replyText.trim()) return;
-                if (!repliesMap[recordId]) repliesMap[recordId] = [];
-                repliesMap[recordId].push(replyText.trim());
-                saveDislikesAndReplies();
+        selLeft = null; selRight = null;
+      }
+    }
 
-                // 同步 replies 至 Sheet (存為 JSON 字串)
-                const repliesJson = JSON.stringify(repliesMap[recordId]);
-                const success = await syncToSheet({ action: "update", id: recordId, changes: { replies: repliesJson } });
-                if (!success) {
-                    showToast('⚠️ 回應已記錄，但 Sheet 同步失敗');
-                } else {
-                    showToast('💬 回應已同步至 Sheet');
-                }
+    function updateQuizProgress() {
+      const curData = database[currentModule];
+      const maxInRound = Math.min(ROUND_SIZE, curData.length);
+      document.getElementById('quiz-progress').textContent = `${currentRoundMatched} / ${maxInRound}`;
+    }
 
-                applyFiltersAndRender();
-            }
+    function resetAllProgress() {
+      if (confirm(`確定要清空當前【${currentModule}】分類的記憶紀錄嗎？`)) {
+        database[currentModule].forEach(item => {
+          delete stats[item.id];
+        });
+        saveStats();
+        renderDashboard();
+      }
+    }
 
-            recordsList.addEventListener('click', function(e) {
-                const target = e.target.closest('button');
-                if (!target) return;
-                const action = target.getAttribute('data-action');
-                const recordId = target.getAttribute('data-id');
-
-                if (action === 'like' && recordId) handleLike(recordId);
-                else if (action === 'dislike' && recordId) handleDislike(recordId);
-                else if (action === 'submit-reply' && recordId) {
-                    const inputField = document.getElementById(`reply-input-${recordId}`);
-                    if (inputField) {
-                        handleAddReply(recordId, inputField.value);
-                        inputField.value = '';
-                    }
-                } else if (action === 'toggle-reply' && recordId) {
-                    const replySection = document.getElementById(`reply-section-${recordId}`);
-                    if (replySection) {
-                        const isHidden = replySection.style.display === 'none';
-                        replySection.style.display = isHidden ? 'block' : 'none';
-                        if (isHidden) {
-                            const input = document.getElementById(`reply-input-${recordId}`);
-                            if (input) input.focus();
-                        }
-                    }
-                }
-            });
-
-            btnSubmit.addEventListener('click', handleSubmit);
-            inputContent.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit();
-                }
-            });
-
-            categoryFilterGroup.addEventListener('click', function(e) {
-                const btn = e.target.closest('.filter-btn');
-                if (!btn) return;
-                const filterVal = btn.getAttribute('data-category-filter');
-                if (filterVal && filterVal !== currentCategoryFilter) {
-                    currentCategoryFilter = filterVal;
-                    applyFiltersAndRender();
-                }
-            });
-
-            // 測試寫入按鈕
-            btnTestWrite.addEventListener('click', async function() {
-                const testRecord = {
-                    id: 'test_' + Date.now(),
-                    createdAt: new Date().toISOString(),
-                    content: '測試店舖',
-                    category: '小食',
-                    review: '自動測試資料',
-                    likes: 0,
-                    dislikes: 0,
-                    replies: '[]'
-                };
-                showToast('🧪 正在傳送測試資料...');
-                const success = await syncToSheet({ action: "create", record: testRecord });
-                if (success) {
-                    showToast('✅ 測試資料已寫入 Sheet！');
-                } else {
-                    showToast('❌ 測試失敗，請檢查 Console');
-                }
-            });
-
-            if (typeof CSS === 'undefined' || typeof CSS.escape !== 'function') {
-                window.CSS = window.CSS || {};
-                CSS.escape = function(value) {
-                    return String(value).replace(/([^\w-])/g, '\\$1');
-                };
-            }
-
-            function startFoodRain() {
-                const container = document.getElementById('foodRainContainer');
-                if (!container) return;
-                const foodEmojis = ['🍜', '🍟', '🧋', '🍰', '🍩', '🍕', '🍔', '🌮', '🍣', '🥟', '🍡', '🧁'];
-                const fragment = document.createDocumentFragment();
-                for (let i = 0; i < 25; i++) {
-                    const emoji = document.createElement('span');
-                    emoji.className = 'food-emoji';
-                    emoji.textContent = foodEmojis[Math.floor(Math.random() * foodEmojis.length)];
-                    emoji.style.left = Math.random() * 100 + '%';
-                    emoji.style.animationDelay = Math.random() * 5 + 's';
-                    emoji.style.animationDuration = (Math.random() * 7 + 8) + 's';
-                    emoji.style.fontSize = (Math.random() * 20 + 20) + 'px';
-                    fragment.appendChild(emoji);
-                }
-                container.appendChild(fragment);
-            }
-
-            async function init() {
-                showStatus('🔄 正在從 Google Sheet 載入資料...', 'info');
-                try {
-                    const sheetRecords = await fetchRecordsFromSheet();
-                    if (sheetRecords.length > 0) {
-                        // 更新互動資料
-                        sheetRecords.forEach(r => {
-                            if (r.dislikes) dislikesMap[r.id] = Number(r.dislikes);
-                            if (r.replies && r.replies !== '[]') {
-                                try {
-                                    const parsed = JSON.parse(r.replies);
-                                    if (Array.isArray(parsed)) repliesMap[r.id] = parsed;
-                                } catch (e) { /* ignore */ }
-                            }
-                        });
-                        saveDislikesAndReplies();
-
-                        // 將核心記錄存入 localStorage
-                        const coreRecords = sheetRecords.map(r => ({
-                            id: r.id,
-                            createdAt: r.createdAt,
-                            content: r.content,
-                            category: r.category,
-                            review: r.review,
-                            likes: r.likes
-                        }));
-                        localStorage.setItem('records', JSON.stringify(coreRecords));
-                        showStatus(`☁️ 已從 Sheet 載入 ${coreRecords.length} 筆記錄`, 'success');
-                    } else {
-                        const localRecords = loadData();
-                        if (localRecords.length > 0) {
-                            showStatus(`⚠️ Sheet 無資料，使用本地備份 (${localRecords.length} 筆)`, 'warning');
-                        } else {
-                            showStatus('📭 沒有任何評價記錄', 'info');
-                        }
-                    }
-                } catch (err) {
-                    const localRecords = loadData();
-                    if (localRecords.length > 0) {
-                        showStatus(`⚠️ 無法連線 Sheet，使用本地備份 (${localRecords.length} 筆)`, 'warning');
-                    } else {
-                        showStatus('⚠️ 無法連線 Sheet，且無本地資料', 'warning');
-                    }
-                }
-
-                startFoodRain();
-                applyFiltersAndRender();
-                inputContent.focus();
-            }
-
-            init();
-
-            console.log('🍜 滋味外賣墻 已就緒 (完整同步版)');
-            console.log('   - Apps Script URL:', APPS_SCRIPT_URL);
-        })();
-    </script>
+    // 啟動直接顯示 Pathway 4 分類
+    setModule('pathway');
+  </script>
 </body>
 </html>
